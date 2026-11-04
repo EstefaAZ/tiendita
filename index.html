@@ -51,9 +51,18 @@ h1{font-size:22px;margin:0;font-weight:600}
 .volver{display:inline-flex;align-items:center;gap:6px;background:var(--acento-suave);border:1px solid var(--acento);color:var(--acento-txt);font-size:14px;font-weight:600;padding:8px 16px;border-radius:999px;margin-bottom:14px;cursor:pointer}
 .volver:active{background:#F5C4B3}
 .aviso{background:#FAEEDA;color:#633806;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:15px}
-.chk{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--borde);cursor:pointer}
-.chk input{width:20px;height:20px;accent-color:var(--acento);flex-shrink:0}
 .persona{width:100%;text-align:left;padding:12px;margin-top:8px;border:1px solid var(--borde);border-radius:10px;background:#fff;font-size:15px;cursor:pointer;color:var(--txt)}
+.deuda{padding:12px 0;border-bottom:1px solid var(--borde)}
+.deuda-top{display:flex;align-items:center;gap:12px}
+.deuda-top input{width:20px;height:20px;accent-color:var(--acento);flex-shrink:0;margin:0}
+.deuda-info{flex:1;background:none;border:none;text-align:left;padding:0;cursor:pointer;color:var(--txt);font:inherit}
+.deuda-info b{display:block;font-size:16px}
+.deuda-info span{display:block;font-size:13px;color:var(--sec);margin-top:2px}
+.flecha{background:none;border:none;font-size:18px;color:var(--sec);cursor:pointer;padding:4px;transition:transform .2s}
+.flecha.abierta{transform:rotate(180deg)}
+.detalle{margin:10px 0 0 32px;background:var(--bg);border-radius:10px;padding:8px 12px}
+.linea{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:4px 0}
+.mono{font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -336,11 +345,23 @@ function elegirPersona(i) {
   $('resultado').innerHTML =
     '<div class="aviso">Debes <b>' + pesos(persona.total) + '</b> en ' + n + (n === 1 ? ' compra' : ' compras') + '</div>' +
     '<section class="card"><p class="etq">Elige qué vas a pagar</p>' +
-    persona.compras.map(c =>
-      '<label class="chk"><input type="checkbox" checked data-id="' + esc(c.id) + '" onchange="marcar(this)">' +
-      '<span style="flex:1"><span class="prod" style="display:block">' + esc(c.detalle) + '</span>' +
-      '<span class="det" style="display:block">' + esc(c.fecha) + '</span></span>' +
-      '<b>' + pesos(c.valor) + '</b></label>').join('') +
+    persona.compras.map((c, k) =>
+      '<div class="deuda">' +
+        '<div class="deuda-top">' +
+          '<input type="checkbox" checked data-id="' + esc(c.id) + '" onchange="marcar(this)" aria-label="Pagar compra del ' + esc(c.fecha) + '">' +
+          '<button class="deuda-info" onclick="abrir(' + k + ')">' +
+            '<b>' + esc(c.fecha) + '</b>' +
+            '<span id="lbl' + k + '">' + c.cantidad + (c.cantidad === 1 ? ' producto' : ' productos') + ' · ver detalle</span>' +
+          '</button>' +
+          '<b>' + pesos(c.valor) + '</b>' +
+          '<button class="flecha" id="fl' + k + '" onclick="abrir(' + k + ')" aria-label="Ver detalle">▾</button>' +
+        '</div>' +
+        '<div class="detalle" id="dt' + k + '" hidden>' +
+          c.items.map(it =>
+            '<div class="linea"><span>' + it.cantidad + ' × ' + esc(it.producto) + '</span>' +
+            '<span class="mono">' + pesos(it.subtotal) + '</span></div>').join('') +
+        '</div>' +
+      '</div>').join('') +
     '<div class="total" style="margin-top:12px"><span class="etq" style="margin:0">Vas a pagar</span><b id="totalA"></b></div></section>' +
     '<section class="card"><p class="etq">Forma de pago</p>' +
     '<div id="pagosA" class="pagos">' + htmlPagos(datos.formasAbono, null, 'elegirPagoA') + '</div>' +
@@ -349,6 +370,14 @@ function elegirPersona(i) {
     '<p id="errA" class="err" style="text-align:center"></p>';
 
   actualizarA();
+}
+
+function abrir(k) {
+  const dt = $('dt' + k);
+  const c = persona.compras[k];
+  dt.hidden = !dt.hidden;
+  $('fl' + k).classList.toggle('abierta', !dt.hidden);
+  $('lbl' + k).textContent = c.cantidad + (c.cantidad === 1 ? ' producto' : ' productos') + (dt.hidden ? ' · ver detalle' : ' · ver menos');
 }
 
 function marcar(el) {
