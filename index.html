@@ -136,6 +136,10 @@ h1{font-size:22px;margin:0;font-weight:600}
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbwcoc8VLkxToQEByvXFwHxOKp-nueH0tNxEST0S2gRAlCuzLAlVPVPjpoFjmd9QkQz2/exec';
 
+const LEMA_COMPRAR = 'Coge, registra y disfruta.';
+const LEMA_FIADO = 'Fiado sí, olvidado jamás 😉';
+const LEMA_PAGADO = 'Antojo resuelto, compra registrada.';
+
 function api(accion, datos) {
   return fetch(API_URL, { method: 'POST', body: JSON.stringify({ accion: accion, datos: datos }) })
     .then(r => r.json())
@@ -211,10 +215,10 @@ function copiar(btn, tipo) {
   setTimeout(() => btn.textContent = '📋 Copiar', 1500);
 }
 
-function exito(nombre, msg) {
+function exito(nombre, msg, lema) {
   $('exTitulo').textContent = '¡Listo, ' + nombre.split(' ')[0] + '!';
   $('exDetalle').textContent = msg;
-  mostrar('exito', '');
+  mostrar('exito', lema || '');
 }
 
 /* ---------- COMPRAR ---------- */
@@ -243,7 +247,7 @@ function irComprar() {
   $('btnC').disabled = false;
   $('btnC').textContent = 'Registrar compra';
   actualizarC();
-  mostrar('comprar', 'Productos de hoy');
+  mostrar('comprar', LEMA_COMPRAR);
 }
 
 function quedan(i) {
@@ -293,9 +297,15 @@ function enviarCompra() {
   api('registrarCompra', { nombre: nombre, pago: pagoC, items: items })
     .then(r => {
       guardarNombre(nombre);
-      exito(nombre, r.pendiente
-        ? 'Tu compra de ' + pesos(r.total) + ' quedó registrada como pendiente. Puedes pagarla cuando quieras en "Pagar lo que debo".'
-        : 'Tu compra de ' + pesos(r.total) + ' (' + pagoC.toLowerCase() + ') quedó registrada.');
+      if (r.pendiente) {
+        exito(nombre,
+          'Tu compra de ' + pesos(r.total) + ' quedó registrada como pendiente. Puedes pagarla cuando quieras en "Pagar lo que debo".',
+          LEMA_FIADO);
+      } else {
+        exito(nombre,
+          'Tu compra de ' + pesos(r.total) + ' (' + pagoC.toLowerCase() + ') quedó registrada.',
+          LEMA_PAGADO);
+      }
     })
     .catch(e => {
       $('errC').textContent = msgError(e);
@@ -415,7 +425,7 @@ function enviarPago() {
       guardarNombre(persona.nombre);
       const resta = persona.total - r.total;
       exito(persona.nombre, 'Tu pago de ' + pesos(r.total) + ' (' + pagoA.toLowerCase() + ') quedó registrado.' +
-        (resta > 0 ? ' Te quedan ' + pesos(resta) + ' pendientes.' : ' ¡Ya estás al día! 🎉'));
+        (resta > 0 ? ' Te quedan ' + pesos(resta) + ' pendientes.' : ' ¡Ya estás al día! 🎉'), '');
     })
     .catch(e => {
       $('errA').textContent = msgError(e);
