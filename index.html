@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La tiendita</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+<style>
+:root{--bg:#FAF7F2;--card:#fff;--txt:#2C2C2A;--sec:#6B6A65;--borde:#E7E3DA;--acento:#D85A30;--acento-suave:#FAECE7;--acento-txt:#993C1D;--ok:#3B6D11;--ok-suave:#EAF3DE;--error:#A32D2D;--aviso:#854F0B}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:16px}
+.app{max-width:440px;margin:0 auto;padding:20px 16px 40px}
+header{text-align:center;margin-bottom:16px}
+.logo{width:52px;height:52px;border-radius:50%;background:var(--acento-suave);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 8px}
+h1{font-size:22px;margin:0;font-weight:600}
+.sub{color:var(--sec);font-size:14px;margin:2px 0 0}
+.card{background:var(--card);border:1px solid var(--borde);border-radius:16px;padding:16px;margin-bottom:12px}
+.etq{font-size:14px;color:var(--sec);margin:0 0 8px}
+.campo{width:100%;font-size:16px;padding:12px;border:1px solid var(--borde);border-radius:10px;outline:none}
+.campo:focus{border-color:var(--acento)}
+.fila{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--borde)}
+.fila:last-child{border-bottom:none}
+.prod{font-size:16px;margin:0}
+.det{font-size:13px;color:var(--sec);margin:2px 0 0}
+.poco{color:var(--aviso)}
+.ctrl{display:flex;align-items:center;gap:10px}
+.qb{width:36px;height:36px;border-radius:50%;border:1px solid var(--borde);background:#fff;font-size:20px;line-height:1;cursor:pointer;color:var(--txt)}
+.qb:active{background:var(--acento-suave)}
+.num{min-width:20px;text-align:center;font-weight:600}
+.total{display:flex;justify-content:space-between;align-items:baseline}
+.total b{font-size:28px}
+.pagos{display:flex;gap:8px;flex-wrap:wrap}
+.pago{flex:1;min-width:110px;padding:12px 8px;border-radius:10px;border:1px solid var(--borde);background:#fff;font-size:15px;cursor:pointer;color:var(--txt)}
+.pago.on{background:var(--acento-suave);border-color:var(--acento);color:var(--acento-txt);font-weight:600}
+.copiar{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:10px}
+.copiar small{display:block;font-size:12px;color:var(--sec)}
+.copiar b{font-family:ui-monospace,Menlo,monospace;font-size:16px}
+.bc{padding:8px 12px;border-radius:8px;border:1px solid var(--borde);background:#fff;font-size:14px;cursor:pointer;color:var(--txt);white-space:nowrap}
+.nota{font-size:13px;color:var(--sec);margin:10px 0 0}
+.err{font-size:13px;color:var(--error);margin:6px 0 0}
+.principal{width:100%;padding:15px;border:none;border-radius:12px;background:var(--acento);color:#fff;font-size:17px;font-weight:600;cursor:pointer}
+.principal:disabled{opacity:.6}
+.centro{text-align:center;color:var(--sec);padding:30px 0}
+.exito{text-align:center}
+.check{width:64px;height:64px;border-radius:50%;background:var(--ok-suave);color:var(--ok);font-size:32px;display:flex;align-items:center;justify-content:center;margin:10px auto}
+.grande{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:18px;margin-bottom:12px;background:var(--card);border:1px solid var(--borde);border-radius:16px;cursor:pointer;color:var(--txt);font-size:16px}
+.grande:active{background:var(--acento-suave)}
+.grande .ico{width:48px;height:48px;border-radius:50%;background:var(--acento-suave);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.grande b{display:block;font-size:17px}
+.grande small{display:block;font-size:13px;color:var(--sec);margin-top:2px}
+.volver{display:inline-flex;align-items:center;gap:6px;background:var(--acento-suave);border:1px solid var(--acento);color:var(--acento-txt);font-size:14px;font-weight:600;padding:8px 16px;border-radius:999px;margin-bottom:14px;cursor:pointer}
+.volver:active{background:#F5C4B3}
+.aviso{background:#FAEEDA;color:#633806;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:15px}
+.chk{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--borde);cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:var(--acento);flex-shrink:0}
+.persona{width:100%;text-align:left;padding:12px;margin-top:8px;border:1px solid var(--borde);border-radius:10px;background:#fff;font-size:15px;cursor:pointer;color:var(--txt)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">🛒</div>
+    <h1 id="titulo">La tiendita</h1>
+    <p id="subtitulo" class="sub">¿Qué quieres hacer?</p>
+  </header>
+
+  <div id="cargando" class="centro">Cargando…</div>
+
+  <main id="inicio" hidden>
+    <button class="grande" onclick="irComprar()">
+      <span class="ico">🛒</span>
+      <span><b>Comprar</b><small>Registra lo que vas a llevar</small></span>
+    </button>
+    <button class="grande" onclick="irPagar()">
+      <span class="ico">💳</span>
+      <span><b>Pagar lo que debo</b><small>Abona a tus compras pendientes</small></span>
+    </button>
+  </main>
+
+  <main id="comprar" hidden>
+    <button class="volver" onclick="irInicio()">← Volver</button>
+    <section class="card">
+      <p class="etq">Tu nombre</p>
+      <input id="nombre" class="campo" placeholder="Ej: Laura Gómez" autocomplete="name">
+      <p id="errNombre" class="err"></p>
+    </section>
+    <section class="card">
+      <p class="etq">¿Qué vas a llevar?</p>
+      <div id="lista"></div>
+      <p id="errProd" class="err"></p>
+    </section>
+    <section class="card total">
+      <span class="etq" style="margin:0">Total a pagar</span>
+      <b id="totalC">$0</b>
+    </section>
+    <section class="card">
+      <p class="etq">Forma de pago</p>
+      <div id="pagosC" class="pagos"></div>
+      <div id="transferC" hidden></div>
+      <p id="errPago" class="err"></p>
+    </section>
+    <button id="btnC" class="principal" onclick="enviarCompra()">Registrar compra</button>
+    <p id="errC" class="err" style="text-align:center"></p>
+  </main>
+
+  <main id="pagar" hidden>
+    <button class="volver" onclick="irInicio()">← Volver</button>
+    <section class="card">
+      <p class="etq">Tu nombre</p>
+      <div style="display:flex;gap:8px">
+        <input id="nombreP" class="campo" placeholder="Ej: Laura Gómez" style="flex:1;min-width:0">
+        <button class="bc" onclick="buscar()">🔍 Buscar</button>
+      </div>
+      <p id="errBuscar" class="err"></p>
+    </section>
+    <div id="resultado"></div>
+  </main>
+
+  <section id="exito" class="card exito" hidden>
+    <div class="check">✓</div>
+    <h2 id="exTitulo" style="margin:0 0 6px;font-size:20px"></h2>
+    <p id="exDetalle" class="sub" style="margin-bottom:18px"></p>
+    <button class="principal" onclick="cargar()">Volver al inicio</button>
+  </section>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwcoc8VLkxToQEByvXFwHxOKp-nueH0tNxEST0S2gRAlCuzLAlVPVPjpoFjmd9QkQz2/exec';
+
+function api(accion, datos) {
+  return fetch(API_URL, { method: 'POST', body: JSON.stringify({ accion: accion, datos: datos }) })
+    .then(r => r.json())
+    .then(r => { if (!r.ok) throw new Error(r.error); return r.data; });
+}
+
+let datos = null, cant = {}, pagoC = null, pagoA = null, personas = [], persona = null, marcadas = new Set();
+const $ = id => document.getElementById(id);
+const pesos = n => '$' + Math.round(n).toLocaleString('es-CO');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICONOS = { 'Efectivo': '💵 ', 'Transferencia': '📲 ', 'Quedo debiendo': '📝 ' };
+const msgError = e => String((e && e.message) || e).replace(/^(Error|Exception):\s*/, '');
+
+function mostrar(id, sub) {
+  ['cargando', 'inicio', 'comprar', 'pagar', 'exito'].forEach(s => $(s).hidden = (s !== id));
+  if (sub !== undefined) $('subtitulo').textContent = sub;
+  window.scrollTo(0, 0);
+}
+
+function cargar() {
+  mostrar('cargando');
+  $('cargando').textContent = 'Cargando…';
+  api('obtenerDatos')
+    .then(d => {
+      datos = d;
+      $('titulo').textContent = d.tienda || 'La tiendita';
+      document.title = d.tienda || 'La tiendita';
+      irInicio();
+    })
+    .catch(() => { $('cargando').textContent = 'No se pudo cargar la tiendita. Revisa tu conexión y recarga la página.'; });
+}
+
+function irInicio() { mostrar('inicio', '¿Qué quieres hacer?'); }
+
+function nombreGuardado() { try { return localStorage.getItem('tiendita_nombre') || ''; } catch (e) { return ''; } }
+function guardarNombre(n) { try { localStorage.setItem('tiendita_nombre', n); } catch (e) {} }
+
+function htmlPagos(opciones, actual, fn) {
+  return opciones.map(fp =>
+    '<button class="pago' + (fp === actual ? ' on' : '') + '" data-fp="' + esc(fp) + '" onclick="' + fn + '(this.dataset.fp)">' +
+    (ICONOS[fp] || '') + esc(fp) + '</button>').join('');
+}
+
+function htmlTransfer(tipo) {
+  const v = tipo === 'C' ? totalC() : totalA();
+  return '<div class="copiar"><div><small>' + esc(datos.banco || '') + (datos.titular ? ' · ' + esc(datos.titular) : '') + '</small>' +
+    '<b>' + esc(datos.cuenta) + '</b></div><button class="bc" onclick="copiar(this,\'cuenta\')">📋 Copiar</button></div>' +
+    '<div class="copiar"><div><small>Valor exacto</small><b id="valor' + tipo + '">' + pesos(v) + '</b></div>' +
+    '<button class="bc" onclick="copiar(this,\'' + tipo + '\')">📋 Copiar</button></div>' +
+    '<p class="nota">Puedes pagar con el QR de la tiendita o copiando estos datos en tu app.</p>';
+}
+
+function mostrarTransfer(id, tipo, fp) {
+  const el = $(id);
+  if (fp === 'Transferencia' && datos.cuenta) { el.innerHTML = htmlTransfer(tipo); el.hidden = false; }
+  else { el.hidden = true; el.innerHTML = ''; }
+}
+
+function copiar(btn, tipo) {
+  const t = tipo === 'cuenta'
+    ? String(datos.cuenta).replace(/\s/g, '')
+    : String(Math.round(tipo === 'C' ? totalC() : totalA()));
+  const ta = document.createElement('textarea');
+  ta.value = t; ta.setAttribute('readonly', '');
+  ta.style.position = 'absolute'; ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select(); ta.setSelectionRange(0, 99999);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+  if (!ok && navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {});
+  btn.textContent = '✓ Copiado';
+  setTimeout(() => btn.textContent = '📋 Copiar', 1500);
+}
+
+function exito(nombre, msg) {
+  $('exTitulo').textContent = '¡Listo, ' + nombre.split(' ')[0] + '!';
+  $('exDetalle').textContent = msg;
+  mostrar('exito', '');
+}
+
+/* ---------- COMPRAR ---------- */
+function irComprar() {
+  cant = {}; pagoC = null;
+  if (!$('nombre').value) $('nombre').value = nombreGuardado();
+
+  if (!datos.productos.length) {
+    $('lista').innerHTML = '<p class="centro" style="padding:10px 0">Hoy no hay productos disponibles 😕</p>';
+  } else {
+    $('lista').innerHTML = datos.productos.map((p, i) =>
+      '<div class="fila"><div>' +
+        '<p class="prod">' + esc(p.nombre) + '</p>' +
+        '<p class="det">' + pesos(p.precio) + ' · <span id="q' + i + '"></span></p>' +
+      '</div><div class="ctrl">' +
+        '<button class="qb" onclick="cambiar(' + i + ',-1)" aria-label="Quitar">−</button>' +
+        '<span class="num" id="n' + i + '">0</span>' +
+        '<button class="qb" onclick="cambiar(' + i + ',1)" aria-label="Agregar">+</button>' +
+      '</div></div>').join('');
+    datos.productos.forEach((p, i) => quedan(i));
+  }
+
+  $('pagosC').innerHTML = htmlPagos(datos.formasPago, null, 'elegirPagoC');
+  mostrarTransfer('transferC', 'C', null);
+  ['errNombre', 'errProd', 'errPago', 'errC'].forEach(id => $(id).textContent = '');
+  $('btnC').disabled = false;
+  $('btnC').textContent = 'Registrar compra';
+  actualizarC();
+  mostrar('comprar', 'Productos de hoy');
+}
+
+function quedan(i) {
+  const left = datos.productos[i].disponible - (cant[i] || 0);
+  const el = $('q' + i);
+  el.textContent = 'quedan ' + left;
+  el.className = left <= 3 ? 'poco' : '';
+}
+
+function cambiar(i, d) {
+  cant[i] = Math.max(0, Math.min(datos.productos[i].disponible, (cant[i] || 0) + d));
+  $('n' + i).textContent = cant[i];
+  quedan(i);
+  $('errProd').textContent = '';
+  actualizarC();
+}
+
+function totalC() { return datos.productos.reduce((s, p, i) => s + p.precio * (cant[i] || 0), 0); }
+
+function actualizarC() {
+  $('totalC').textContent = pesos(totalC());
+  if ($('valorC')) $('valorC').textContent = pesos(totalC());
+}
+
+function elegirPagoC(fp) {
+  pagoC = fp;
+  $('pagosC').innerHTML = htmlPagos(datos.formasPago, fp, 'elegirPagoC');
+  mostrarTransfer('transferC', 'C', fp);
+  $('errPago').textContent = '';
+}
+
+function enviarCompra() {
+  const nombre = $('nombre').value.trim();
+  const items = datos.productos
+    .map((p, i) => ({ nombre: p.nombre, cantidad: cant[i] || 0 }))
+    .filter(it => it.cantidad > 0);
+  let bad = false;
+  if (!nombre) { $('errNombre').textContent = 'Escribe tu nombre'; bad = true; }
+  if (!items.length) { $('errProd').textContent = 'Agrega al menos un producto'; bad = true; }
+  if (!pagoC) { $('errPago').textContent = 'Elige cómo vas a pagar'; bad = true; }
+  if (bad) return;
+
+  $('btnC').disabled = true;
+  $('btnC').textContent = 'Registrando…';
+  $('errC').textContent = '';
+
+  api('registrarCompra', { nombre: nombre, pago: pagoC, items: items })
+    .then(r => {
+      guardarNombre(nombre);
+      exito(nombre, r.pendiente
+        ? 'Tu compra de ' + pesos(r.total) + ' quedó registrada como pendiente. Puedes pagarla cuando quieras en "Pagar lo que debo".'
+        : 'Tu compra de ' + pesos(r.total) + ' (' + pagoC.toLowerCase() + ') quedó registrada.');
+    })
+    .catch(e => {
+      $('errC').textContent = msgError(e);
+      $('btnC').disabled = false;
+      $('btnC').textContent = 'Registrar compra';
+    });
+}
+
+/* ---------- PAGAR ---------- */
+function irPagar() {
+  persona = null; personas = [];
+  $('resultado').innerHTML = '';
+  $('errBuscar').textContent = '';
+  if (!$('nombreP').value) $('nombreP').value = nombreGuardado();
+  mostrar('pagar', 'Tus compras pendientes');
+  if ($('nombreP').value.trim().length >= 3) buscar();
+}
+
+function buscar() {
+  const n = $('nombreP').value.trim();
+  if (n.length < 3) { $('errBuscar').textContent = 'Escribe al menos 3 letras de tu nombre'; return; }
+  $('errBuscar').textContent = '';
+  $('resultado').innerHTML = '<p class="centro">Buscando…</p>';
+
+  api('buscarDeudas', n)
+    .then(lista => {
+      personas = lista;
+      if (!lista.length) {
+        $('resultado').innerHTML = '<section class="card centro" style="padding:24px 16px">No encontramos compras pendientes a nombre de <b>' + esc(n) + '</b> 🎉</section>';
+      } else if (lista.length === 1) {
+        elegirPersona(0);
+      } else {
+        $('resultado').innerHTML = '<section class="card"><p class="etq">Encontramos varios nombres parecidos. ¿Cuál eres tú?</p>' +
+          lista.map((p, i) => '<button class="persona" onclick="elegirPersona(' + i + ')">' + esc(p.nombre) + '</button>').join('') +
+          '</section>';
+      }
+    })
+    .catch(e => { $('resultado').innerHTML = ''; $('errBuscar').textContent = msgError(e); });
+}
+
+function elegirPersona(i) {
+  persona = personas[i];
+  pagoA = null;
+  marcadas = new Set(persona.compras.map(c => c.id));
+  const n = persona.compras.length;
+
+  $('resultado').innerHTML =
+    '<div class="aviso">Debes <b>' + pesos(persona.total) + '</b> en ' + n + (n === 1 ? ' compra' : ' compras') + '</div>' +
+    '<section class="card"><p class="etq">Elige qué vas a pagar</p>' +
+    persona.compras.map(c =>
+      '<label class="chk"><input type="checkbox" checked data-id="' + esc(c.id) + '" onchange="marcar(this)">' +
+      '<span style="flex:1"><span class="prod" style="display:block">' + esc(c.detalle) + '</span>' +
+      '<span class="det" style="display:block">' + esc(c.fecha) + '</span></span>' +
+      '<b>' + pesos(c.valor) + '</b></label>').join('') +
+    '<div class="total" style="margin-top:12px"><span class="etq" style="margin:0">Vas a pagar</span><b id="totalA"></b></div></section>' +
+    '<section class="card"><p class="etq">Forma de pago</p>' +
+    '<div id="pagosA" class="pagos">' + htmlPagos(datos.formasAbono, null, 'elegirPagoA') + '</div>' +
+    '<div id="transferA" hidden></div><p id="errPagoA" class="err"></p></section>' +
+    '<button id="btnA" class="principal" onclick="enviarPago()">Registrar pago</button>' +
+    '<p id="errA" class="err" style="text-align:center"></p>';
+
+  actualizarA();
+}
+
+function marcar(el) {
+  if (el.checked) marcadas.add(el.dataset.id); else marcadas.delete(el.dataset.id);
+  $('errA').textContent = '';
+  actualizarA();
+}
+
+function totalA() {
+  return persona ? persona.compras.reduce((s, c) => s + (marcadas.has(c.id) ? c.valor : 0), 0) : 0;
+}
+
+function actualizarA() {
+  $('totalA').textContent = pesos(totalA());
+  if ($('valorA')) $('valorA').textContent = pesos(totalA());
+}
+
+function elegirPagoA(fp) {
+  pagoA = fp;
+  $('pagosA').innerHTML = htmlPagos(datos.formasAbono, fp, 'elegirPagoA');
+  mostrarTransfer('transferA', 'A', fp);
+  $('errPagoA').textContent = '';
+}
+
+function enviarPago() {
+  if (!marcadas.size) { $('errA').textContent = 'Elige al menos una compra'; return; }
+  if (!pagoA) { $('errPagoA').textContent = 'Elige cómo vas a pagar'; return; }
+
+  $('btnA').disabled = true;
+  $('btnA').textContent = 'Registrando…';
+  $('errA').textContent = '';
+
+  api('registrarPago', { nombre: persona.nombre, ids: Array.from(marcadas), pago: pagoA })
+    .then(r => {
+      guardarNombre(persona.nombre);
+      const resta = persona.total - r.total;
+      exito(persona.nombre, 'Tu pago de ' + pesos(r.total) + ' (' + pagoA.toLowerCase() + ') quedó registrado.' +
+        (resta > 0 ? ' Te quedan ' + pesos(resta) + ' pendientes.' : ' ¡Ya estás al día! 🎉'));
+    })
+    .catch(e => {
+      $('errA').textContent = msgError(e);
+      $('btnA').disabled = false;
+      $('btnA').textContent = 'Registrar pago';
+    });
+}
+
+$('nombre').addEventListener('input', () => $('errNombre').textContent = '');
+$('nombreP').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+cargar();
+</script>
+</body>
+</html>
