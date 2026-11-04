@@ -32,11 +32,12 @@ h1{font-size:22px;margin:0;font-weight:600}
 .pagos{display:flex;gap:8px;flex-wrap:wrap}
 .pago{flex:1;min-width:110px;padding:12px 8px;border-radius:10px;border:1px solid var(--borde);background:#fff;font-size:15px;cursor:pointer;color:var(--txt)}
 .pago.on{background:var(--acento-suave);border-color:var(--acento);color:var(--acento-txt);font-weight:600}
-.copiar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:10px}
+.copiar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg);border-radius:10px;padding:12px;margin-top:10px}
 .copiar small{display:block;font-size:12px;color:var(--sec)}
-.copiar b{font-family:ui-monospace,Menlo,monospace;font-size:16px}
+.copiar .titular{display:block;font-size:15px;font-weight:600;color:var(--txt);margin:2px 0}
+.copiar b{display:block;font-family:ui-monospace,Menlo,monospace;font-size:16px}
 .cuenta{display:flex;align-items:center;gap:12px;min-width:0}
-.logo-banco{position:relative;width:40px;height:40px;border-radius:10px;border:1px solid var(--borde);background:var(--acento-suave);color:var(--acento-txt);font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.logo-banco{position:relative;width:44px;height:44px;border-radius:10px;border:1px solid var(--borde);background:var(--acento-suave);color:var(--acento-txt);font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .logo-banco img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
 .bc{padding:8px 12px;border-radius:8px;border:1px solid var(--borde);background:#fff;font-size:14px;cursor:pointer;color:var(--txt);white-space:nowrap}
 .nota{font-size:13px;color:var(--sec);margin:10px 0 0}
@@ -197,8 +198,11 @@ function logoBanco(banco) {
 function htmlTransfer() {
   return datos.cuentas.map((c, i) =>
     '<div class="copiar"><div class="cuenta">' + logoBanco(c.banco) +
-    '<div><small>' + esc([c.banco, c.tipo, c.titular].filter(Boolean).join(' · ')) + '</small>' +
-    '<b>' + esc(c.numero) + '</b></div></div>' +
+    '<div style="min-width:0">' +
+      '<small>' + esc([c.banco, c.tipo].filter(Boolean).join(' · ')) + '</small>' +
+      (c.titular ? '<span class="titular">' + esc(c.titular) + '</span>' : '') +
+      '<b>' + esc(c.numero) + '</b>' +
+    '</div></div>' +
     '<button class="bc" onclick="copiar(this,' + i + ')">📋 Copiar</button></div>').join('') +
     '<p class="nota">Paga con el QR de la tiendita o copia el número en tu app.</p>';
 }
