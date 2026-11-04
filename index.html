@@ -32,9 +32,12 @@ h1{font-size:22px;margin:0;font-weight:600}
 .pagos{display:flex;gap:8px;flex-wrap:wrap}
 .pago{flex:1;min-width:110px;padding:12px 8px;border-radius:10px;border:1px solid var(--borde);background:#fff;font-size:15px;cursor:pointer;color:var(--txt)}
 .pago.on{background:var(--acento-suave);border-color:var(--acento);color:var(--acento-txt);font-weight:600}
-.copiar{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:10px}
+.copiar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:10px}
 .copiar small{display:block;font-size:12px;color:var(--sec)}
 .copiar b{font-family:ui-monospace,Menlo,monospace;font-size:16px}
+.cuenta{display:flex;align-items:center;gap:12px;min-width:0}
+.logo-banco{position:relative;width:40px;height:40px;border-radius:10px;border:1px solid var(--borde);background:var(--acento-suave);color:var(--acento-txt);font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.logo-banco img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
 .bc{padding:8px 12px;border-radius:8px;border:1px solid var(--borde);background:#fff;font-size:14px;cursor:pointer;color:var(--txt);white-space:nowrap}
 .nota{font-size:13px;color:var(--sec);margin:10px 0 0}
 .err{font-size:13px;color:var(--error);margin:6px 0 0}
@@ -165,6 +168,7 @@ function cargar() {
   api('obtenerDatos')
     .then(d => {
       datos = d;
+      datos.cuentas = d.cuentas || [];
       $('titulo').textContent = d.tienda || 'La tiendita';
       document.title = d.tienda || 'La tiendita';
       irInicio();
@@ -183,25 +187,30 @@ function htmlPagos(opciones, actual, fn) {
     (ICONOS[fp] || '') + esc(fp) + '</button>').join('');
 }
 
-function htmlTransfer(tipo) {
-  const v = tipo === 'C' ? totalC() : totalA();
-  return '<div class="copiar"><div><small>' + esc(datos.banco || '') + (datos.titular ? ' · ' + esc(datos.titular) : '') + '</small>' +
-    '<b>' + esc(datos.cuenta) + '</b></div><button class="bc" onclick="copiar(this,\'cuenta\')">📋 Copiar</button></div>' +
-    '<div class="copiar"><div><small>Valor exacto</small><b id="valor' + tipo + '">' + pesos(v) + '</b></div>' +
-    '<button class="bc" onclick="copiar(this,\'' + tipo + '\')">📋 Copiar</button></div>' +
-    '<p class="nota">Puedes pagar con el QR de la tiendita o copiando estos datos en tu app.</p>';
+function logoBanco(banco) {
+  const slug = String(banco || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  const letra = esc(String(banco || '?').charAt(0).toUpperCase());
+  return '<span class="logo-banco"><span>' + letra + '</span>' +
+    (slug ? '<img src="' + slug + '.png" alt="" onerror="this.remove()">' : '') + '</span>';
 }
 
-function mostrarTransfer(id, tipo, fp) {
+function htmlTransfer() {
+  return datos.cuentas.map((c, i) =>
+    '<div class="copiar"><div class="cuenta">' + logoBanco(c.banco) +
+    '<div><small>' + esc([c.banco, c.tipo, c.titular].filter(Boolean).join(' · ')) + '</small>' +
+    '<b>' + esc(c.numero) + '</b></div></div>' +
+    '<button class="bc" onclick="copiar(this,' + i + ')">📋 Copiar</button></div>').join('') +
+    '<p class="nota">Paga con el QR de la tiendita o copia el número en tu app.</p>';
+}
+
+function mostrarTransfer(id, fp) {
   const el = $(id);
-  if (fp === 'Transferencia' && datos.cuenta) { el.innerHTML = htmlTransfer(tipo); el.hidden = false; }
+  if (fp === 'Transferencia' && datos.cuentas.length) { el.innerHTML = htmlTransfer(); el.hidden = false; }
   else { el.hidden = true; el.innerHTML = ''; }
 }
 
-function copiar(btn, tipo) {
-  const t = tipo === 'cuenta'
-    ? String(datos.cuenta).replace(/\s/g, '')
-    : String(Math.round(tipo === 'C' ? totalC() : totalA()));
+function copiar(btn, i) {
+  const t = String(datos.cuentas[i].numero).replace(/\s/g, '');
   const ta = document.createElement('textarea');
   ta.value = t; ta.setAttribute('readonly', '');
   ta.style.position = 'absolute'; ta.style.left = '-9999px';
@@ -242,7 +251,7 @@ function irComprar() {
   }
 
   $('pagosC').innerHTML = htmlPagos(datos.formasPago, null, 'elegirPagoC');
-  mostrarTransfer('transferC', 'C', null);
+  mostrarTransfer('transferC', null);
   ['errNombre', 'errProd', 'errPago', 'errC'].forEach(id => $(id).textContent = '');
   $('btnC').disabled = false;
   $('btnC').textContent = 'Registrar compra';
@@ -267,15 +276,12 @@ function cambiar(i, d) {
 
 function totalC() { return datos.productos.reduce((s, p, i) => s + p.precio * (cant[i] || 0), 0); }
 
-function actualizarC() {
-  $('totalC').textContent = pesos(totalC());
-  if ($('valorC')) $('valorC').textContent = pesos(totalC());
-}
+function actualizarC() { $('totalC').textContent = pesos(totalC()); }
 
 function elegirPagoC(fp) {
   pagoC = fp;
   $('pagosC').innerHTML = htmlPagos(datos.formasPago, fp, 'elegirPagoC');
-  mostrarTransfer('transferC', 'C', fp);
+  mostrarTransfer('transferC', fp);
   $('errPago').textContent = '';
 }
 
@@ -400,15 +406,12 @@ function totalA() {
   return persona ? persona.compras.reduce((s, c) => s + (marcadas.has(c.id) ? c.valor : 0), 0) : 0;
 }
 
-function actualizarA() {
-  $('totalA').textContent = pesos(totalA());
-  if ($('valorA')) $('valorA').textContent = pesos(totalA());
-}
+function actualizarA() { $('totalA').textContent = pesos(totalA()); }
 
 function elegirPagoA(fp) {
   pagoA = fp;
   $('pagosA').innerHTML = htmlPagos(datos.formasAbono, fp, 'elegirPagoA');
-  mostrarTransfer('transferA', 'A', fp);
+  mostrarTransfer('transferA', fp);
   $('errPagoA').textContent = '';
 }
 
